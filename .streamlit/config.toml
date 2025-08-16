@@ -1,0 +1,7 @@
+[server]
+headless = true
+enableXsrfProtection = true
+enableCORS = false
+
+[theme]
+base = "dark"
