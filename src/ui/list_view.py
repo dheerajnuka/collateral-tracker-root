@@ -5,7 +5,7 @@ from ..utils import get_df, _df_style
 def list_view(session: Session):
     st.subheader("📋 Records — Search & Export")
     name_q = st.text_input("Search by Customer")
-    status_q = st.selectbox("Status", ["All", "Active", "Closed", "Overdue"], index=0)
+    status_q = st.selectbox("Status", ["All", "", "Taken", "ReWrite", "Sold"], index=0)
     df = get_df(session, filters={"name": name_q, "status": status_q})
     if df.empty:
         st.info("No records found.")
