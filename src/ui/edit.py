@@ -31,7 +31,7 @@ def edit_view(session: Session):
             rate = st.number_input("Interest Rate (% p.a.)", min_value=0.0, step=0.1, value=float(rec.interest_rate_pa))
             start_dt = st.date_input("Start Date", value=rec.start_date)
             end_dt = st.date_input("End Date (optional)", value=rec.end_date)
-            status = st.selectbox("Item Status", ["Active", "Closed", "Overdue"], index=["Active","Closed","Overdue"].index(rec.status) if rec.status in ["Active","Closed","Overdue"] else 0)
+            status = st.selectbox("Item Status", ["", "Rewrite", "Sold", "Taken"], index=["", "Rewrite", "Sold", "Taken"].index(rec.status) if rec.status in ["", "Rewrite", "Sold", "Taken"] else 0)
             received_date = st.date_input("Date Of Item Received", value=rec.received_date)
             amount_received = st.number_input("Amount Received", min_value=0.0, step=100.0, value=float(rec.amount_received or 0.0))
         comments = st.text_area("Comments", value=rec.comments or "")
