@@ -1,16 +1,19 @@
 import streamlit as st
+st.set_page_config(page_title="Collateral Tracker", page_icon="💼", layout="wide")
+
 from src.db import SessionLocal, init_db
 from src.ui.add import add_form
 from src.ui.list_view import list_view
 from src.ui.edit import edit_view
 from src.ui.reports import reports_view
 
+STATUS_OPTIONS = ["", "Taken", "ReWrite", "Sold"]
+
 def header():
     st.title("💼 Collateral Tracker")
-    st.caption("End-to-end CRUD app with interest accrual and reporting")
+    st.caption("Track collateral, interest, receipts, and status — with inline and full edit.")
 
 def main():
-    st.set_page_config(page_title="Collateral Tracker", page_icon="💼", layout="wide")
     header()
     init_db()
     session = SessionLocal()

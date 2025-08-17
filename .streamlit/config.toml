@@ -1,7 +1,6 @@
 [server]
-headless = true
+address = "localhost"
+port = 8501
+enableCORS = true
 enableXsrfProtection = true
-enableCORS = false
-
-[theme]
-base = "dark"
+headless = true

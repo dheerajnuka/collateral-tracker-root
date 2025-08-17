@@ -22,7 +22,6 @@ def reports_view(session: Session):
 
     df = get_df(session, {})
     if df is not None and not df.empty:
-        # show essential finance columns with new naming
         cols = [c for c in ["Item Status", "Amount", "Accrued Interest", "Amount Due"] if c in df.columns]
         st.dataframe(df[cols] if cols else df, use_container_width=True, hide_index=True)
     else:

@@ -13,10 +13,7 @@ def edit_view(session: Session):
         q = st.text_input("Search by Name or Phone", key="edit_search_q")
         status_filter = st.selectbox("Status", ["All"] + STATUS_OPTIONS, index=0, key="edit_status_filter")
 
-    # Server-side filter by name + status; phone filtered locally below
     df_all = get_df(session, {"name": q if q else "", "status": status_filter if status_filter != "All" else "All"})
-
-    # Additional client-side phone filter
     if q:
         try:
             df_all = df_all[
@@ -49,7 +46,6 @@ def edit_view(session: Session):
         st.error("Record not found.")
         return
 
-    # Unique keys per record to avoid duplicate element IDs
     k = lambda suffix: f"edit_{sel_id}_{suffix}"
 
     with st.form(k("form")):
