@@ -18,7 +18,7 @@ def add_form(session: Session):
             start_dt = st.date_input("Start Date", value=date.today())
             received_date = st.date_input("Date Of Item Received", value=None)
             amount_received = st.number_input("Amount Received", min_value=0.0, step=100.0, value=0.0)
-            status = st.selectbox("Item Status", ["Active", "Closed", "Overdue"], index=0)
+            status = st.selectbox("Item Status", ["", "Rewrite", "Sold", "Taken"], index=0)
         comments = st.text_area("Comments")
         end_dt = st.date_input("End Date (optional)", value=None)
 
