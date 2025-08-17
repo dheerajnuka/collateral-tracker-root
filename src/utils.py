@@ -23,29 +23,30 @@ def amount_due(principal: float, accrued_interest: float) -> float:
 def get_df(session: Session, filters: dict | None = None) -> pd.DataFrame:
     q = session.query(Collateral)
     if filters:
-        if (name := filters.get("name")):
-            q = q.filter(Collateral.customer_name.ilike(f"%{name}%"))
-        if (status := filters.get("status")) and status != "All":
-            q = q.filter(Collateral.status == status)
-        if (from_dt := filters.get("from")):
-            q = q.filter(Collateral.start_date >= from_dt)
-        if (to_dt := filters.get("to")):
-            q = q.filter(Collateral.start_date <= to_dt)
+        name_q = (filters or {}).get("name") or ""
+        status_q = (filters or {}).get("status") or "All"
+        if name_q:
+            q = q.filter(Collateral.customer_name.ilike(f"%{name_q}%"))
+        if status_q and status_q != "All":
+            q = q.filter(Collateral.status == status_q)
     rows = q.order_by(Collateral.id.desc()).all()
     data = []
     for r in rows:
-        intr = compute_interest(r.principal, r.interest_rate_pa, r.start_date, r.end_date if r.status == "Closed" else None)
+        intr = compute_interest(r.principal, r.interest_rate_pa, r.start_date, r.end_date)
         data.append({
             "ID": r.id,
-            "Created On": r.created_on,
-            "Customer": r.customer_name,
-            "Item": r.item,
-            "Weight (g)": r.weight_grams,
-            "Principal": r.principal,
-            "Interest % p.a.": r.interest_rate_pa,
-            "Start": r.start_date,
-            "End": r.end_date,
-            "Status": r.status,
+            "Item Status": r.status,
+            "Date": r.created_on,
+            "Name": r.customer_name,
+            "Item Name": r.item,
+            "Weight": r.weight_grams,
+            "Amount": r.principal,
+            "Phone Number": r.phone_number,
+            "Date Of Item Received": r.received_date,
+            "Amount Received": r.amount_received,
+            "Interest Rate (% p.a.)": r.interest_rate_pa,
+            "Start Date": r.start_date,
+            "End Date": r.end_date,
             "Accrued Interest": intr,
             "Amount Due": amount_due(r.principal, intr),
             "Comments": r.comments,

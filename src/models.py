@@ -6,13 +6,16 @@ class Collateral(Base):
     __tablename__ = "collateral"
 
     id = Column(Integer, primary_key=True, index=True)
-    created_on = Column(Date, default=date.today)
-    customer_name = Column(String, nullable=False)
-    item = Column(String, nullable=False)
-    weight_grams = Column(Float, nullable=True)
-    principal = Column(Float, nullable=False)
-    interest_rate_pa = Column(Float, nullable=False)
+    created_on = Column(Date, default=date.today)  # "Date"
+    customer_name = Column(String, nullable=False)  # "Name"
+    item = Column(String, nullable=False)  # "Item Name"
+    weight_grams = Column(Float, nullable=True)  # "Weight"
+    principal = Column(Float, nullable=False)  # "Amount"
+    interest_rate_pa = Column(Float, nullable=False)  # Interest Rate (% p.a.)
     start_date = Column(Date, nullable=False)
     end_date = Column(Date, nullable=True)
-    status = Column(String, default="Active")
+    status = Column(String, default="Active")  # "Item Status"
     comments = Column(String, nullable=True)
+    phone_number = Column(String, nullable=True)  # "Phone Number"
+    received_date = Column(Date, nullable=True)  # "Date Of Item Received"
+    amount_received = Column(Float, nullable=True)  # "Amount Received"
