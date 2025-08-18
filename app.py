@@ -7,8 +7,6 @@ from src.ui.list_view import list_view
 from src.ui.edit import edit_view
 from src.ui.reports import reports_view
 
-STATUS_OPTIONS = ["", "Taken", "ReWrite", "Sold"]
-
 def header():
     st.title("💼 Collateral Tracker")
     st.caption("Track collateral, interest, receipts, and status — with inline and full edit.")

@@ -2,7 +2,18 @@ import os
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-DB_URL = os.getenv("DATABASE_URL", "sqlite:///collateral.db")
+def _get_db_url() -> str:
+    """Prefer Streamlit secrets (Cloud), then env var; fall back to SQLite for dev."""
+    try:
+        import streamlit as st
+        url = st.secrets.get("DATABASE_URL")
+        if url:
+            return url
+    except Exception:
+        pass
+    return os.getenv("DATABASE_URL", "sqlite:///collateral.db")
+
+DB_URL = _get_db_url()
 
 connect_args = {"check_same_thread": False} if DB_URL.startswith("sqlite") else {}
 engine = create_engine(DB_URL, echo=False, future=True, connect_args=connect_args)
@@ -12,6 +23,7 @@ Base = declarative_base()
 def init_db():
     from .models import Collateral  # noqa
     Base.metadata.create_all(engine)
+    # Lightweight migration only for SQLite (no-op on Postgres)
     if DB_URL.startswith("sqlite"):
         with engine.begin() as conn:
             cols = {r[1] for r in conn.execute(text("PRAGMA table_info(collateral)")).all()}

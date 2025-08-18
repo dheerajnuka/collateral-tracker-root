@@ -11,11 +11,11 @@ class Collateral(Base):
     item = Column(String, nullable=False)  # "Item Name"
     weight_grams = Column(Float, nullable=True)  # "Weight"
     principal = Column(Float, nullable=False)  # "Amount"
-    interest_rate_pa = Column(Float, nullable=False)  # "Interest Rate (% p.a.)"
+    interest_rate_pa = Column(Float, nullable=False)  # UI field, not used in calc
     start_date = Column(Date, nullable=False)
-    end_date = Column(Date, nullable=True)
-    status = Column(String, default="")  # "Item Status" -> ["", "Taken", "ReWrite", "Sold"]
+    end_date = Column(Date, nullable=True)  # kept for compatibility; mirrors received_date
+    status = Column(String, default="")  # "", Taken, ReWrite, Sold
     comments = Column(String, nullable=True)
     phone_number = Column(String, nullable=True)  # "Phone Number"
-    received_date = Column(Date, nullable=True)  # "Date Of Item Received"
+    received_date = Column(Date, nullable=True)  # "Date Of Item Received" (treated as end date)
     amount_received = Column(Float, nullable=True)  # "Amount Received"

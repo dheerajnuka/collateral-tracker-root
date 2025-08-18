@@ -2,7 +2,7 @@ from datetime import date
 import streamlit as st
 from sqlalchemy.orm import Session
 from ..models import Collateral
-from ..utils import compute_interest, amount_due, get_df
+from ..utils import compute_interest, amount_due, get_df, safe_rerun
 
 STATUS_OPTIONS = ["", "Taken", "ReWrite", "Sold"]
 
@@ -14,6 +14,7 @@ def edit_view(session: Session):
         status_filter = st.selectbox("Status", ["All"] + STATUS_OPTIONS, index=0, key="edit_status_filter")
 
     df_all = get_df(session, {"name": q if q else "", "status": status_filter if status_filter != "All" else "All"})
+
     if q:
         try:
             df_all = df_all[
@@ -30,7 +31,7 @@ def edit_view(session: Session):
         st.info("No matching records.")
         return
 
-    needed_cols = ["ID", "Name", "Item Name", "Item Status", "Amount Due"]
+    needed_cols = ["ID", "Name", "Item Name", "Item Status", "Accrued Interest"]
     for c in needed_cols:
         if c not in df_all.columns:
             st.error(f"Missing column: {c}. Please refresh the app.")
@@ -59,13 +60,12 @@ def edit_view(session: Session):
         with c2:
             rate = st.number_input("Interest Rate (% p.a.)", min_value=0.0, step=0.1, value=float(rec.interest_rate_pa), key=k("rate"))
             start_dt = st.date_input("Start Date", value=rec.start_date, key=k("start"))
-            end_dt = st.date_input("End Date (optional)", value=rec.end_date, key=k("end"))
-            status = st.selectbox("Item Status", STATUS_OPTIONS, index=(STATUS_OPTIONS.index(rec.status) if rec.status in STATUS_OPTIONS else 0), key=k("status"))
             received_date = st.date_input("Date Of Item Received", value=rec.received_date, key=k("received"))
+            status = st.selectbox("Item Status", STATUS_OPTIONS, index=(STATUS_OPTIONS.index(rec.status) if rec.status in STATUS_OPTIONS else 0), key=k("status"))
             amount_received = st.number_input("Amount Received", min_value=0.0, step=100.0, value=float(rec.amount_received or 0.0), key=k("amt_received"))
         comments = st.text_area("Comments", value=rec.comments or "", key=k("comments"))
 
-        intr = compute_interest(principal, rate, start_dt, end_dt if status=="Sold" else None)
+        intr = compute_interest(principal, rate, start_dt, received_date if received_date else None)
         st.info(f"Accrued Interest: ₹{intr:,.2f} | Amount Due: ₹{amount_due(principal, intr):,.2f}")
         save_btn = st.form_submit_button("💾 Save Changes", type="primary")
         sold_btn = st.form_submit_button("✅ Mark Sold")
@@ -79,24 +79,26 @@ def edit_view(session: Session):
         rec.principal = float(principal)
         rec.interest_rate_pa = float(rate)
         rec.start_date = start_dt
-        rec.end_date = end_dt if status != "" else None
-        rec.status = status
         rec.received_date = received_date
-        rec.amount_received = float(amount_received) if amount_received else None
+        rec.end_date = received_date  # mirror
+        rec.status = status
+        rec.amount_received = float(amount_received)
         rec.comments = comments.strip() if comments else None
         session.commit()
         st.success("Saved.")
-        st.rerun()
+        safe_rerun()
 
     if sold_btn:
         rec.status = "Sold"
-        rec.end_date = rec.end_date or date.today()
+        if not rec.received_date:
+            rec.received_date = date.today()
+        rec.end_date = rec.received_date
         session.commit()
         st.success("Marked as Sold.")
-        st.rerun()
+        safe_rerun()
 
     if delete_btn:
         session.delete(rec)
         session.commit()
         st.warning("Deleted.")
-        st.rerun()
+        safe_rerun()
