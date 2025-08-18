@@ -6,6 +6,7 @@ from src.ui.add import add_form
 from src.ui.list_view import list_view
 from src.ui.edit import edit_view
 from src.ui.reports import reports_view
+from src.ui.diagnostics import diagnostics_view
 
 def header():
     st.title("💼 Collateral Tracker")
@@ -16,7 +17,7 @@ def main():
     init_db()
     session = SessionLocal()
 
-    tab_add, tab_list, tab_edit, tab_reports = st.tabs(["Add Entry", "Records", "Edit", "Reports"])
+    tab_add, tab_list, tab_edit, tab_reports, tab_diag = st.tabs(["Add Entry", "Records", "Edit", "Reports", "Diagnostics"])
     with tab_add:
         add_form(session)
     with tab_list:
@@ -25,6 +26,8 @@ def main():
         edit_view(session)
     with tab_reports:
         reports_view(session)
+    with tab_diag:
+        diagnostics_view()
 
 if __name__ == "__main__":
     main()

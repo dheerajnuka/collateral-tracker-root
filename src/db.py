@@ -20,13 +20,45 @@ engine = create_engine(DB_URL, echo=False, future=True, connect_args=connect_arg
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 Base = declarative_base()
 
+def _mask_url(url: str) -> str:
+    try:
+        from sqlalchemy.engine.url import make_url
+        u = make_url(url)
+        password = u.password or ""
+        if password:
+            # mask all but first and last char (if length > 2)
+            if len(password) <= 2:
+                masked = "*" * len(password)
+            else:
+                masked = password[0] + "*" * (len(password) - 2) + password[-1]
+            u = u.set(password=masked)
+        return str(u)
+    except Exception:
+        return "(hidden)"
+
+def _diagnose_error(e: Exception):
+    import streamlit as st
+    masked = _mask_url(DB_URL)
+    st.error(
+        "Cannot connect to the database.\n\n"
+        f"**DATABASE_URL (masked):** `{masked}`\n\n"
+        "Common fixes:\n"
+        "• On Streamlit Cloud, use a **hosted** Postgres URL (not `localhost`)\n"
+        "• URL-encode special characters in the password (e.g. `@` → `%40`)\n"
+        "• Add `?sslmode=require` if your provider requires SSL\n"
+        "• Ensure the DB, user and privileges exist"
+    )
+    with st.expander("Show technical details"):
+        st.exception(e)
+    st.stop()
+
 def init_db():
+    # Try a lightweight connection test so we can show helpful errors
+    try:
+        with engine.connect() as conn:
+            conn.execute(text("select 1"))
+    except Exception as e:
+        _diagnose_error(e)
+
     from .models import Collateral  # noqa
     Base.metadata.create_all(engine)
-    # Lightweight migration only for SQLite (no-op on Postgres)
-    if DB_URL.startswith("sqlite"):
-        with engine.begin() as conn:
-            cols = {r[1] for r in conn.execute(text("PRAGMA table_info(collateral)")).all()}
-            for col, typ in {"phone_number":"TEXT","received_date":"DATE","amount_received":"REAL"}.items():
-                if col not in cols:
-                    conn.execute(text(f"ALTER TABLE collateral ADD COLUMN {col} {typ}"))
