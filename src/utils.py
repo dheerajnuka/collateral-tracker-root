@@ -54,8 +54,15 @@ def get_df(session: Session, filters: dict | None = None) -> pd.DataFrame:
     if filters:
         name_q = (filters or {}).get("name") or ""
         status_q = (filters or {}).get("status") or "All"
+        # if name_q:
+            # q = q.filter(Collateral.customer_name.ilike(f"%{name_q}%"))
+            
         if name_q:
-            q = q.filter(Collateral.customer_name.ilike(f"%{name_q}%"))
+            q = q.filter(or_(
+                Collateral.customer_name.ilike(f"%{name_q}%"),
+                Collateral.phone_number.ilike(f"%{name_q}%")
+            ))
+
         if status_q and status_q != "All":
             q = q.filter(Collateral.status == status_q)
     rows = q.order_by(Collateral.id.desc()).all()
